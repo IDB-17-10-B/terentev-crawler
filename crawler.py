@@ -1,30 +1,37 @@
 import re
 import requests
 import time
-site = 'http://stankin.ru'
-pattern = re.compile(r'href="(?P<http_address>[a-zA-Z0-9:?&=\/.]+)"')
+site = "http://stankin.ru"
 
-
-def foo(curr_link, depth=3):
-    text = requests.get(curr_link).text
-    links = pattern.findall(text)
-
-    new_links =[]
-    for link in links:
-        if link.startswith('/'):
-            new_links.append(site + link)
-        elif not link.startswith('/') and not link.startswith('http'):
-            new_links.append(curr_link + '/' + link)
-        elif link.startswith('http://stankin.ru'):
-            new_links.append(link)
-
-    if depth - 1 <= 0:
-        return new_links
-
-    for i, link in enumerate(new_links):
-        time.sleep(2)
-        print('send', link, i, len(new_links))
-        new_links.extend(foo(link, depth-1))
-
-    return new_links
-
+pattern=re.compile(r'href="(?P<url>[a-zA-Z0-9:/&?=/.-]+)"')
+#html=requests.get("http://stankin.ru").text
+#links=pattern.findall(html)
+all_links = []
+full_links = []
+def get_links(address, index):
+  html=requests.get(address).text
+  links=pattern.findall(html)
+  next_links = []
+  for link in links:
+    if ".png" in link:
+      continue
+    elif ".css" in link:
+      continue
+    elif link.startswith("/"):
+      full_links.append(site + link)
+    elif not link.startswith('http') and not link.startswith('/'):
+      full_links.append(site + '/' + link)
+    else:
+      full_links.append(link)
+  if (index-1<0):
+    return next_links
+  for link in full_links:
+    print (link)
+    time.sleep(2)
+    next_links = get_links(link, index - 1)
+    all_links.extend(next_links)
+  full_links.extend(all_links)
+ # return full_links
+#for link in get_links(site, 2):
+  #print (link)
+get_links(site, 2)
